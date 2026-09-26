@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # campus_lost_found
 
 A new Flutter project.
@@ -15,3 +16,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# Lost-and-Found-Campus-App
+Lost &amp; Found Campus is a Flutter-based mobile app that helps students report, search, and recover lost items on campus. Users can post lost or found items with details like name, image, location, and date. The app allows users to search items, view details, contact the owner, and mark items as returned.
+>>>>>>> d7b8c3b5bdfb0623361f6d8609c6b33d82de6b5e

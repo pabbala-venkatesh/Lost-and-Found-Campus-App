@@ -1,0 +1,7 @@
+Lost & Found Campus App is a Flutter-based mobile application designed to help students and staff efficiently report, search, and recover lost items within a college campus. 
+The application provides separate options for reporting lost items and found items, along with details such as item name, category, description, date, location, and image. 
+Users can browse and search reported items, view item details, and contact the person who posted the item.
+The main objective of the application is to provide a simple, centralized, and user-friendly platform for managing lost and found belongings on campus. 
+The system can maintain the status of items as Lost, Found, or Returned, making it easier to track the recovery process.
+The application is developed using Flutter and Dart, with local storage or Firebase as the backend. 
+This project demonstrates practical implementation of mobile application concepts such as user interfaces, navigation, forms, data storage, image handling, and search functionality.
