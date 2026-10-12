@@ -1,4 +1,7 @@
+
 import 'package:flutter/material.dart';
+import '../models/item_model.dart';
+import '../services/item_store.dart';
 
 class ReportItemPage extends StatefulWidget {
   const ReportItemPage({super.key});
@@ -8,7 +11,51 @@ class ReportItemPage extends StatefulWidget {
 }
 
 class _ReportItemPageState extends State<ReportItemPage> {
+  final nameController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final locationController = TextEditingController();
+
   String itemType = 'Lost';
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    locationController.dispose();
+    super.dispose();
+  }
+
+  void submitReport() {
+    if (nameController.text.trim().isEmpty ||
+        descriptionController.text.trim().isEmpty ||
+        locationController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+        ),
+      );
+      return;
+    }
+
+    final item = ItemModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: nameController.text.trim(),
+      description: descriptionController.text.trim(),
+      location: locationController.text.trim(),
+      date: DateTime.now().toString().split(' ')[0],
+      type: itemType,
+    );
+
+    ItemStore.items.add(item);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$itemType item reported successfully!'),
+      ),
+    );
+
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +63,12 @@ class _ReportItemPageState extends State<ReportItemPage> {
       appBar: AppBar(
         title: const Text('Report Item'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             TextField(
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Item Name',
                 hintText: 'Example: Black Wallet',
@@ -29,10 +77,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
+              controller: descriptionController,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: 'Description',
@@ -42,10 +89,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
+              controller: locationController,
               decoration: InputDecoration(
                 labelText: 'Location',
                 hintText: 'Example: College Library',
@@ -54,11 +100,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 15),
-
             DropdownButtonFormField<String>(
-              value: itemType,
+              initialValue: itemType,
               decoration: InputDecoration(
                 labelText: 'Item Type',
                 border: OutlineInputBorder(
@@ -76,18 +120,18 @@ class _ReportItemPageState extends State<ReportItemPage> {
                 ),
               ],
               onChanged: (value) {
-                setState(() {
-                  itemType = value!;
-                });
+                if (value != null) {
+                  setState(() {
+                    itemType = value;
+                  });
+                }
               },
             ),
-
             const SizedBox(height: 25),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: submitReport,
                 child: const Text('Submit Report'),
               ),
             ),
