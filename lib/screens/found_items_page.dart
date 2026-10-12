@@ -1,10 +1,16 @@
+
 import 'package:flutter/material.dart';
+import '../services/item_store.dart';
 
 class FoundItemsPage extends StatelessWidget {
   const FoundItemsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final foundItems = ItemStore.items
+        .where((item) => item.type == 'Found')
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Found Items'),
@@ -12,6 +18,7 @@ class FoundItemsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Existing sample items
           Card(
             child: ListTile(
               leading: const Icon(
@@ -26,7 +33,6 @@ class FoundItemsPage extends StatelessWidget {
               ),
             ),
           ),
-
           Card(
             child: ListTile(
               leading: const Icon(
@@ -41,7 +47,6 @@ class FoundItemsPage extends StatelessWidget {
               ),
             ),
           ),
-
           Card(
             child: ListTile(
               leading: const Icon(
@@ -53,6 +58,28 @@ class FoundItemsPage extends StatelessWidget {
               trailing: const Icon(
                 Icons.arrow_forward_ios,
                 size: 18,
+              ),
+            ),
+          ),
+
+          // Newly reported found items
+          ...foundItems.map(
+            (item) => Card(
+              child: ListTile(
+                leading: const Icon(
+                  Icons.inventory_2,
+                  size: 40,
+                ),
+                title: Text(item.name),
+                subtitle: Text(
+                  '${item.location} • ${item.date}\n'
+                  '${item.description}',
+                ),
+                isThreeLine: true,
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 18,
+                ),
               ),
             ),
           ),
