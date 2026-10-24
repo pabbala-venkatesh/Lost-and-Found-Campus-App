@@ -1,7 +1,14 @@
+
 import 'package:flutter/material.dart';
+import '../models/item_model.dart';
 
 class ItemDetailsPage extends StatelessWidget {
-  const ItemDetailsPage({super.key});
+  final ItemModel item;
+
+  const ItemDetailsPage({
+    super.key,
+    required this.item,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -9,29 +16,28 @@ class ItemDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Item Details'),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.phone_android,
-              size: 100,
+            Center(
+              child: Icon(
+                item.type == 'Lost'
+                    ? Icons.search
+                    : Icons.inventory_2,
+                size: 100,
+              ),
             ),
-
             const SizedBox(height: 20),
-
-            const Text(
-              'Black Smartphone',
-              style: TextStyle(
+            Text(
+              item.name,
+              style: const TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 15),
-
+            const SizedBox(height: 20),
             const Text(
               'Description',
               style: TextStyle(
@@ -39,44 +45,39 @@ class ItemDetailsPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 5),
-
-            const Text(
-              'Black smartphone with a protective case. '
-              'It was lost inside the college library.',
-              style: TextStyle(
-                fontSize: 16,
-              ),
+            Text(
+              item.description,
+              style: const TextStyle(fontSize: 16),
             ),
-
             const SizedBox(height: 20),
-
-            const Text(
-              'Location: College Library',
-              style: TextStyle(fontSize: 16),
+            Text(
+              'Location: ${item.location}',
+              style: const TextStyle(fontSize: 16),
             ),
-
             const SizedBox(height: 10),
-
-            const Text(
-              'Date: Today',
-              style: TextStyle(fontSize: 16),
+            Text(
+              'Date: ${item.date}',
+              style: const TextStyle(fontSize: 16),
             ),
-
             const SizedBox(height: 10),
-
-            const Text(
-              'Status: Lost',
-              style: TextStyle(fontSize: 16),
+            Text(
+              'Status: ${item.type}',
+              style: const TextStyle(fontSize: 16),
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Contact feature will be added later.',
+                      ),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.phone),
                 label: const Text('Contact'),
               ),

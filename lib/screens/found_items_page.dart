@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import '../models/item_model.dart';
 import '../services/item_store.dart';
+import 'item_details_page.dart';
 
 class FoundItemsPage extends StatelessWidget {
   const FoundItemsPage({super.key});
@@ -11,79 +13,73 @@ class FoundItemsPage extends StatelessWidget {
         .where((item) => item.type == 'Found')
         .toList();
 
+    final sampleItems = [
+      ItemModel(
+        id: 'found1',
+        name: 'Wireless Earphones',
+        description: 'Wireless earphones found in the lab.',
+        location: 'Computer Lab',
+        date: 'Today',
+        type: 'Found',
+      ),
+      ItemModel(
+        id: 'found2',
+        name: 'Water Bottle',
+        description: 'Water bottle found on campus.',
+        location: 'Sports Ground',
+        date: 'Yesterday',
+        type: 'Found',
+      ),
+      ItemModel(
+        id: 'found3',
+        name: 'Programming Book',
+        description: 'Programming book found in the library.',
+        location: 'Library',
+        date: '2 days ago',
+        type: 'Found',
+      ),
+    ];
+
+    final allFoundItems = [...sampleItems, ...foundItems];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Found Items'),
       ),
-      body: ListView(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        children: [
-          // Existing sample items
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.headphones,
-                size: 40,
-              ),
-              title: const Text('Wireless Earphones'),
-              subtitle: const Text('Computer Lab • Today'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.water_drop,
-                size: 40,
-              ),
-              title: const Text('Water Bottle'),
-              subtitle: const Text('Sports Ground • Yesterday'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.book,
-                size: 40,
-              ),
-              title: const Text('Programming Book'),
-              subtitle: const Text('Library • 2 days ago'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
+        itemCount: allFoundItems.length,
+        itemBuilder: (context, index) {
+          final item = allFoundItems[index];
 
-          // Newly reported found items
-          ...foundItems.map(
-            (item) => Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.inventory_2,
-                  size: 40,
-                ),
-                title: Text(item.name),
-                subtitle: Text(
-                  '${item.location} • ${item.date}\n'
-                  '${item.description}',
-                ),
-                isThreeLine: true,
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                ),
+          return Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.inventory_2,
+                size: 40,
               ),
+              title: Text(item.name),
+              subtitle: Text(
+                '${item.location} • ${item.date}\n'
+                '${item.description}',
+              ),
+              isThreeLine: true,
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ItemDetailsPage(item: item),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

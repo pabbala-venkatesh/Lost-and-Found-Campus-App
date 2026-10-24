@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import '../models/item_model.dart';
 import '../services/item_store.dart';
+import 'item_details_page.dart';
 
 class LostItemsPage extends StatelessWidget {
   const LostItemsPage({super.key});
@@ -11,79 +13,74 @@ class LostItemsPage extends StatelessWidget {
         .where((item) => item.type == 'Lost')
         .toList();
 
+    final sampleItems = [
+      ItemModel(
+        id: 'sample1',
+        name: 'Black Smartphone',
+        description:
+            'Black smartphone with a protective case.',
+        location: 'College Library',
+        date: 'Today',
+        type: 'Lost',
+      ),
+      ItemModel(
+        id: 'sample2',
+        name: 'Black Wallet',
+        description: 'Black wallet lost near the canteen.',
+        location: 'Canteen',
+        date: 'Yesterday',
+        type: 'Lost',
+      ),
+      ItemModel(
+        id: 'sample3',
+        name: 'Room Keys',
+        description: 'Set of room keys.',
+        location: 'Block A',
+        date: '2 days ago',
+        type: 'Lost',
+      ),
+    ];
+
+    final allLostItems = [...sampleItems, ...lostItems];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lost Items'),
       ),
-      body: ListView(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        children: [
-          // Previously added sample items
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.phone_android,
-                size: 40,
-              ),
-              title: const Text('Black Smartphone'),
-              subtitle: const Text('Library • Today'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.account_balance_wallet,
-                size: 40,
-              ),
-              title: const Text('Black Wallet'),
-              subtitle: const Text('Canteen • Yesterday'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.key,
-                size: 40,
-              ),
-              title: const Text('Room Keys'),
-              subtitle: const Text('Block A • 2 days ago'),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ),
-          ),
+        itemCount: allLostItems.length,
+        itemBuilder: (context, index) {
+          final item = allLostItems[index];
 
-          // Items submitted through the report form
-          ...lostItems.map(
-            (item) => Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.search,
-                  size: 40,
-                ),
-                title: Text(item.name),
-                subtitle: Text(
-                  '${item.location} • ${item.date}\n'
-                  '${item.description}',
-                ),
-                isThreeLine: true,
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                ),
+          return Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.search,
+                size: 40,
               ),
+              title: Text(item.name),
+              subtitle: Text(
+                '${item.location} • ${item.date}\n'
+                '${item.description}',
+              ),
+              isThreeLine: true,
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ItemDetailsPage(item: item),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
