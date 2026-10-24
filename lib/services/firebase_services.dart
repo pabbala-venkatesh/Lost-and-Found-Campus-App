@@ -1,5 +1,9 @@
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class FirebaseService {
-  // We will add Firebase connection here later.
+  final CollectionReference<Map<String, dynamic>> _items =
+      FirebaseFirestore.instance.collection('items');
 
   Future<void> addItem({
     required String name,
@@ -8,10 +12,27 @@ class FirebaseService {
     required String date,
     required String type,
   }) async {
-    // Firebase database code will be added later.
+    await _items.add({
+      'name': name,
+      'description': description,
+      'location': location,
+      'date': date,
+      'type': type,
+      'status': 'Active',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
-  Future<void> getItems() async {
-    // Code to get items from Firebase will be added later.
+  Future<List<Map<String, dynamic>>> getItems() async {
+    final snapshot = await _items
+        .where('status', isEqualTo: 'Active')
+        .get();
+
+    return snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        ...doc.data(),
+      };
+    }).toList();
   }
 }
