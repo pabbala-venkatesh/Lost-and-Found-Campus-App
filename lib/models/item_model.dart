@@ -1,4 +1,3 @@
-
 class ItemModel {
   final String id;
   final String name;
@@ -8,6 +7,7 @@ class ItemModel {
   final String type;
   final String reporterName;
   final String reporterPhone;
+  final String ownerUid;
 
   ItemModel({
     required this.id,
@@ -18,5 +18,6 @@ class ItemModel {
     required this.type,
     this.reporterName = '',
     this.reporterPhone = '',
+    this.ownerUid = '',
   });
 }

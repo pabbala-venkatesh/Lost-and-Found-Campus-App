@@ -58,6 +58,8 @@ class FoundItemsPage extends StatelessWidget {
                         location: (data['location'] ?? '').toString(),
                         date: (data['date'] ?? '').toString(),
                         type: (data['type'] ?? 'Found').toString(),
+                        reporterName: (data['reporterName'] ?? '').toString(),
+                        reporterPhone: (data['reporterPhone'] ?? '').toString(),
                       ))
                   .toList();
 

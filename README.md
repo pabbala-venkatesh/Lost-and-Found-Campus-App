@@ -1,56 +1,47 @@
-# 🎓 Campus Lost & Found App
+# Campus Lost & Found App
 
-A Flutter application designed to help students report, discover, and recover lost belongings on campus. The app uses Firebase to store item reports and manage user authentication.
+A Flutter-based web application that helps campus users report, browse, and manage lost and found items.
 
-## ✨ Features
+**Live Demo:** https://campus-lost-found-app-a43fe.web.app  
+**GitHub Repository:** https://github.com/pabbala-venkatesh/Lost-and-Found-Campus-App
 
-- **Report items:** Submit details about lost or found belongings.
-- **Browse reports:** View active item listings.
-- **Item details:** View descriptions, locations, and reporter information.
-- **Firebase Authentication:** Require users to sign in before reporting items.
-- **Cloud Firestore:** Store and retrieve item reports.
-- **Mark as Returned:** Allow the original reporter to update an item's status.
-- **Access control:** Use Firestore Security Rules to protect item updates.
-- **Responsive interface:** Build the user interface with Flutter for supported platforms.
+## About the Project
 
-## 🛠️ Technologies Used
+The Campus Lost & Found App provides a central place for students and campus users to report missing belongings and browse items that have been found. The goal is to make it easier to reconnect people with their lost belongings through a simple, user-friendly interface.
+
+## Features
+
+- **Report Lost or Found Items:** Submit reports with item details.
+- **Browse Items:** View lost and found item listings.
+- **Search Items:** Find reports more conveniently.
+- **View Item Details:** Open individual reports for additional information.
+- **Firebase Integration:** Uses Firebase services for application backend functionality.
+- **Item Status Management:** Supports marking eligible reports as returned.
+- **Responsive Interface:** Designed to work on desktop, tablet, and mobile screens.
+- **Web Deployment:** Published online using Firebase Hosting.
+
+## Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| Flutter | User interface and app development |
+| Flutter | User interface and application development |
 | Dart | Application programming language |
-| Firebase Authentication | User sign-in |
-| Cloud Firestore | Cloud database |
-| Git | Version control |
-| GitHub | Source code hosting |
+| Firebase Authentication | User authentication |
+| Cloud Firestore | Cloud database for item reports |
+| Firebase Hosting | Web application deployment |
+| Git and GitHub | Version control and source code management |
 
-## 📁 Project Structure
-
-```text
-lib/
-├── models/
-│   └── item_model.dart
-├── screens/
-│   ├── home_page.dart
-│   ├── report_item_page.dart
-│   ├── lost_items_page.dart
-│   ├── found_items_page.dart
-│   └── item_details_page.dart
-└── services/
-    ├── auth_service.dart
-    └── firebase_service.dart
-```
-
-*The structure above represents the expected core files; adjust it if your current project differs.*
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
+Install the following tools:
+
 - Flutter SDK
 - Dart SDK (included with Flutter)
-- Visual Studio Code or another Flutter-compatible IDE
-- A Firebase project
+- Git
+- Visual Studio Code with the Flutter and Dart extensions
+- A Firebase project configured for the application
 
 ### Installation
 
@@ -72,55 +63,92 @@ lib/
    flutter pub get
    ```
 
-4. Configure Firebase for your environment using the official Firebase Flutter setup guide.
-
-5. Run the application:
+4. Run the application:
 
    ```bash
    flutter run
    ```
 
-### Run in Chrome
-
-If web support is configured, launch the app with:
+For web development, use:
 
 ```bash
 flutter run -d chrome
 ```
 
-## 🔐 Security
+Firebase configuration and enabled services must be set up correctly for authentication and database features to work.
 
-- Users must authenticate before reporting items.
-- Firestore Security Rules restrict status updates to the original reporter.
-- Never commit service-account private keys or other sensitive credentials.
-- Review the privacy implications of storing contact numbers in the database.
+## Firebase Configuration
 
-## 🧪 Testing
+The application uses Firebase for authentication and item data storage.
 
-Check the following workflows before releasing the app:
+To run your own configured copy:
 
-- Sign in and report a lost item.
-- Report a found item.
-- Browse and open item details.
-- Mark an item as returned using the original reporting account.
-- Verify that another account cannot mark that item as returned.
+1. Create or select a Firebase project.
+2. Register the required Flutter platform applications.
+3. Configure Firebase for Flutter using the FlutterFire CLI.
+4. Ensure the Firebase Authentication provider and Cloud Firestore database are configured.
+5. Set up and test Firestore security rules before using real user data.
 
-## 🔮 Future Improvements
+Do not commit service-account credentials, private keys, passwords, or other secrets to GitHub.
 
-- Search by item name and campus location.
-- Filter by Lost, Found, and Returned status.
-- Add item photos.
-- Improve accessibility and responsive layouts.
-- Add a dedicated history of returned items.
+## Project Structure
 
-## 👨‍💻 Author
+```text
+campus_lost_found/
+├── lib/
+│   ├── main.dart
+│   ├── firebase_options.dart
+│   ├── screens/
+│   │   ├── report_item_page.dart
+│   │   ├── lost_items_page.dart
+│   │   ├── found_items_page.dart
+│   │   └── item_details_page.dart
+│   └── services/
+│       └── firebase_service.dart
+├── test/
+├── web/
+├── pubspec.yaml
+└── README.md
+```
 
-**Project:** Campus Lost & Found App
+*Note: The structure above describes the expected main files; adjust it if your current repository differs.*
 
-**Developer:** Student project
+## Security and Privacy
 
-Built to practise Flutter development, Firebase integration, database operations, and application access control.
+Security is important when handling campus lost-and-found reports.
 
-## 📄 License
+- Require authentication for report creation and other restricted operations.
+- Apply Firestore rules to validate ownership and allowed updates.
+- Avoid storing private contact details in publicly readable documents.
+- Use sample data when demonstrating the application publicly.
+- Review Firebase security rules before inviting real users.
 
-No license has been specified yet. Add a license if you intend to allow others to reuse or modify this project.
+**Privacy note:** The current Firestore configuration may expose reporter names and phone numbers because item documents are publicly readable. Separate private contact information and update the security rules before using the application with real users.
+
+## Future Improvements
+
+- Separate public item details from private contact information.
+- Add item image uploads.
+- Improve search with category and location filters.
+- Add notifications when matching items are reported.
+- Improve accessibility and user experience.
+- Expand automated tests for authentication, reporting, and item status updates.
+
+## Learning Outcomes
+
+This project provides practical experience with:
+
+- Flutter and Dart application development.
+- Building responsive interfaces.
+- Integrating Firebase services.
+- Working with cloud database rules and authentication.
+- Using Git and GitHub for version control.
+- Building and deploying a Flutter web application.
+
+## Author
+
+**Campus Lost & Found App**  
+Developed as a learning project to explore Flutter, Firebase, and practical application development.
+
+- **Live Demo:** https://campus-lost-found-app-a43fe.web.app
+- **Source Code:** https://github.com/pabbala-venkatesh/Lost-and-Found-Campus-App

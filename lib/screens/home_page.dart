@@ -59,6 +59,9 @@ class _HomePageState extends State<HomePage> {
             location: (item['location'] ?? '').toString(),
             date: (item['date'] ?? '').toString(),
             type: (item['type'] ?? '').toString(),
+            reporterName: (item['reporterName'] ?? '').toString(),
+            reporterPhone: (item['reporterPhone'] ?? '').toString(),
+            ownerUid: (item['ownerUid'] ?? '').toString(),
           );
         }).toList();
 

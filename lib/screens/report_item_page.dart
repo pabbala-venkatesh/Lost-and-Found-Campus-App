@@ -24,6 +24,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
+  final phoneController = TextEditingController();
 
   final FirebaseService _firebaseService = FirebaseService();
 
@@ -35,6 +36,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     nameController.dispose();
     descriptionController.dispose();
     locationController.dispose();
+    phoneController.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
       location: locationController.text.trim(),
       date: DateTime.now().toString().split(' ')[0],
       type: itemType,
+      reporterPhone: phoneController.text.trim(),
     );
 
     try {
@@ -60,6 +63,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
         location: item.location,
         date: item.date,
         type: item.type,
+        reporterPhone: item.reporterPhone,
       );
 
       if (!mounted) return;
@@ -303,6 +307,33 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 19),
+
+                    sectionLabel('How can students contact you?'),
+                    TextFormField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      maxLength: 15,
+                      decoration: fieldDecoration(
+                        label: 'Contact phone number',
+                        hint: 'e.g. +91 9876543210',
+                        icon: Icons.phone_outlined,
+                      ).copyWith(counterText: ''),
+                      validator: (value) {
+                        final phone = (value ?? '').trim();
+                        if (phone.isEmpty) return 'Please enter a contact number.';
+                        final digits = phone.replaceAll(RegExp(r'\D'), '');
+                        if (digits.length < 10 || digits.length > 15) {
+                          return 'Enter a valid phone number (10–15 digits).';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Your name is shown on the report. Your number is used only when someone taps Contact. Only provide a number you agree to share with campus users.',
+                      style: TextStyle(color: _textMuted, fontSize: 12),
                     ),
                     const SizedBox(height: 19),
 

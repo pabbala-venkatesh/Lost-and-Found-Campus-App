@@ -42,6 +42,16 @@ class FirebaseService {
     });
   }
 
+  Future<void> markItemReturned(String itemId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('Please sign in first.');
+    final doc = await _items.doc(itemId).get();
+    if (!doc.exists || doc.data()?['ownerUid'] != user.uid) {
+      throw Exception('Only the person who reported this item can mark it returned.');
+    }
+    await _items.doc(itemId).update({'status': 'Returned'});
+  }
+
   Future<List<Map<String, dynamic>>> getItems() async {
     final snapshot =
         await _items.where('status', isEqualTo: 'Active').get();
