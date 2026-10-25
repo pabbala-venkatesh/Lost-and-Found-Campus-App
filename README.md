@@ -1,47 +1,58 @@
-# Campus Lost & Found App
+# 🎓 Campus Lost & Found App
 
-A Flutter-based application designed to help college students report lost and found items, search for belongings, and view item details in one place.
+A Flutter application designed to help students report, discover, and recover lost belongings on campus. The app uses Firebase to store item reports and manage user authentication.
 
-## Problem Statement
+## ✨ Features
 
-Students often struggle to recover belongings misplaced around campus. This project aims to provide a simple, centralized platform to make reporting and finding items easier.
+- **Report items:** Submit details about lost or found belongings.
+- **Browse reports:** View active item listings.
+- **Item details:** View descriptions, locations, and reporter information.
+- **Firebase Authentication:** Require users to sign in before reporting items.
+- **Cloud Firestore:** Store and retrieve item reports.
+- **Mark as Returned:** Allow the original reporter to update an item's status.
+- **Access control:** Use Firestore Security Rules to protect item updates.
+- **Responsive interface:** Build the user interface with Flutter for supported platforms.
 
-## Features
+## 🛠️ Technologies Used
 
-- Report lost items with a name, description, and location
-- Report found items
-- Select whether an item is lost or found
-- Search reported items by name, location, or description
-- Browse lost and found item lists
-- View individual item details
-- Display recent reports on the home screen
-- Validate required fields before submitting a report
+| Technology | Purpose |
+|---|---|
+| Flutter | User interface and app development |
+| Dart | Application programming language |
+| Firebase Authentication | User sign-in |
+| Cloud Firestore | Cloud database |
+| Git | Version control |
+| GitHub | Source code hosting |
 
-## Technologies Used
+## 📁 Project Structure
 
-- **Flutter** — application UI and development
-- **Dart** — programming language
-- **Git** — version control
-- **GitHub** — source code hosting
+```text
+lib/
+├── models/
+│   └── item_model.dart
+├── screens/
+│   ├── home_page.dart
+│   ├── report_item_page.dart
+│   ├── lost_items_page.dart
+│   ├── found_items_page.dart
+│   └── item_details_page.dart
+└── services/
+    ├── auth_service.dart
+    └── firebase_service.dart
+```
 
-**Planned technology:** Firebase for persistent data storage.
+*The structure above represents the expected core files; adjust it if your current project differs.*
 
-## Current Project Status
-
-The main screens, reporting form, search functionality, item lists, and item details navigation are implemented. The project passes Flutter static analysis and its current automated tests.
-
-At present, newly reported items are stored in temporary in-memory storage. They do not persist after the application restarts.
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Flutter SDK
 - Dart SDK (included with Flutter)
-- Visual Studio Code or another compatible IDE
-- Google Chrome for running the web version
+- Visual Studio Code or another Flutter-compatible IDE
+- A Firebase project
 
-### Run Locally
+### Installation
 
 1. Clone the repository:
 
@@ -61,33 +72,55 @@ At present, newly reported items are stored in temporary in-memory storage. They
    flutter pub get
    ```
 
-4. Run the application in Chrome:
+4. Configure Firebase for your environment using the official Firebase Flutter setup guide.
+
+5. Run the application:
 
    ```bash
-   flutter run -d chrome
+   flutter run
    ```
 
-5. Check code quality:
+### Run in Chrome
 
-   ```bash
-   flutter analyze
-   ```
+If web support is configured, launch the app with:
 
-6. Run automated tests:
+```bash
+flutter run -d chrome
+```
 
-   ```bash
-   flutter test
-   ```
+## 🔐 Security
 
-## Future Improvements
+- Users must authenticate before reporting items.
+- Firestore Security Rules restrict status updates to the original reporter.
+- Never commit service-account private keys or other sensitive credentials.
+- Review the privacy implications of storing contact numbers in the database.
 
-- Integrate Firebase Cloud Firestore for persistent item storage
-- Add user authentication
-- Implement contact details or secure communication between students
-- Add functionality to mark items as returned
-- Add item images and filters
-- Improve automated tests for reporting and searching
+## 🧪 Testing
 
-## Author
+Check the following workflows before releasing the app:
 
-Developed as a student project to practise Flutter, Dart, UI development, and version control.
+- Sign in and report a lost item.
+- Report a found item.
+- Browse and open item details.
+- Mark an item as returned using the original reporting account.
+- Verify that another account cannot mark that item as returned.
+
+## 🔮 Future Improvements
+
+- Search by item name and campus location.
+- Filter by Lost, Found, and Returned status.
+- Add item photos.
+- Improve accessibility and responsive layouts.
+- Add a dedicated history of returned items.
+
+## 👨‍💻 Author
+
+**Project:** Campus Lost & Found App
+
+**Developer:** Student project
+
+Built to practise Flutter development, Firebase integration, database operations, and application access control.
+
+## 📄 License
+
+No license has been specified yet. Add a license if you intend to allow others to reuse or modify this project.
