@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/item_model.dart';
-import '../services/item_store.dart';
+import '../services/firebase_service.dart';
 import 'item_details_page.dart';
 
 class LostItemsPage extends StatelessWidget {
@@ -17,39 +17,6 @@ class LostItemsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lostItems = ItemStore.items
-        .where((item) => item.type.toLowerCase() == 'lost')
-        .toList();
-
-    final sampleItems = [
-      ItemModel(
-        id: 'sample1',
-        name: 'Black Smartphone',
-        description: 'Black smartphone with a protective case.',
-        location: 'College Library',
-        date: 'Today',
-        type: 'Lost',
-      ),
-      ItemModel(
-        id: 'sample2',
-        name: 'Black Wallet',
-        description: 'Black wallet lost near the canteen.',
-        location: 'Canteen',
-        date: 'Yesterday',
-        type: 'Lost',
-      ),
-      ItemModel(
-        id: 'sample3',
-        name: 'Room Keys',
-        description: 'Set of room keys.',
-        location: 'Block A',
-        date: '2 days ago',
-        type: 'Lost',
-      ),
-    ];
-
-    final allLostItems = [...sampleItems, ...lostItems];
-
     return Scaffold(
       backgroundColor: pageBackground,
       appBar: AppBar(
@@ -63,136 +30,153 @@ class LostItemsPage extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 850),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [navyBlue, primaryBlue],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Lost something?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 23,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Browse reports and find your belongings.',
-                              style: TextStyle(
-                                color: Color(0xFFDCE8FF),
-                                fontSize: 13,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 11,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Text(
-                                '${allLostItems.length} reports',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        width: 66,
-                        height: 66,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.13),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.search_rounded,
-                          color: Colors.white,
-                          size: 37,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Reported belongings',
-                          style: TextStyle(
-                            color: textDark,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      const Icon(
-                        Icons.sort_rounded,
-                        color: textMuted,
-                        size: 19,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Latest',
-                        style: TextStyle(
-                          color: textMuted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: allLostItems.isEmpty
-                      ? _emptyState()
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(
-                            18, 0, 18, 24,
-                          ),
-                          itemCount: allLostItems.length,
-                          itemBuilder: (context, index) {
-                            final item = allLostItems[index];
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: FirebaseService().getItemsStream(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return _message(
+                'Unable to load lost items.',
+                'Check your internet connection and Firestore rules.',
+                Icons.cloud_off_outlined,
+              );
+            }
 
-                            return _lostItemCard(context, item);
-                          },
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: primaryBlue),
+              );
+            }
+
+            final items = (snapshot.data ?? [])
+                .where((data) =>
+                    (data['type'] ?? '').toString().toLowerCase() ==
+                    'lost')
+                .map((data) => ItemModel(
+                      id: (data['id'] ?? '').toString(),
+                      name: (data['name'] ?? 'Unnamed item').toString(),
+                      description:
+                          (data['description'] ?? '').toString(),
+                      location: (data['location'] ?? '').toString(),
+                      date: (data['date'] ?? '').toString(),
+                      type: (data['type'] ?? 'Lost').toString(),
+                    ))
+                .toList();
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 850),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [navyBlue, primaryBlue],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Lost something?',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Browse reports and find your belongings.',
+                                  style: TextStyle(
+                                    color: Color(0xFFDCE8FF),
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 11,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    '${items.length} reports',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            width: 66,
+                            height: 66,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.13),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Icon(
+                              Icons.search_rounded,
+                              color: Colors.white,
+                              size: 37,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        'Reported belongings',
+                        style: TextStyle(
+                          color: textDark,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: items.isEmpty
+                          ? _message(
+                              'No lost items yet',
+                              'New lost-item reports will appear here.',
+                              Icons.search_off_rounded,
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(
+                                18, 0, 18, 24,
+                              ),
+                              itemCount: items.length,
+                              itemBuilder: (context, index) =>
+                                  _lostItemCard(context, items[index]),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -252,7 +236,6 @@ class LostItemsPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           Icons.location_on_outlined,
@@ -333,40 +316,29 @@ class LostItemsPage extends StatelessWidget {
     );
   }
 
-  Widget _emptyState() {
+  Widget _message(String title, String subtitle, IconData icon) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAF2FF),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Icon(
-                Icons.search_off_rounded,
-                color: primaryBlue,
-                size: 36,
-              ),
-            ),
+            Icon(icon, color: primaryBlue, size: 48),
             const SizedBox(height: 16),
-            const Text(
-              'No lost items yet',
-              style: TextStyle(
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
                 color: textDark,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'New reports will appear here when someone reports a lost item.',
+            Text(
+              subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: textMuted,
                 fontSize: 13,
                 height: 1.5,
@@ -377,4 +349,5 @@ class LostItemsPage extends StatelessWidget {
       ),
     );
   }
-}
+  }
+

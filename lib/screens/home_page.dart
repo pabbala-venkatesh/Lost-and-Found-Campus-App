@@ -1,8 +1,12 @@
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../services/auth_service.dart';
+import '../services/firebase_service.dart';
 import '../models/item_model.dart';
-import '../services/item_store.dart';
 import 'report_item_page.dart';
 import 'lost_items_page.dart';
 import 'found_items_page.dart';
@@ -26,12 +30,110 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController searchController =
       TextEditingController();
 
+  final AuthService _authService = AuthService();
+  final FirebaseService _firebaseService = FirebaseService();
+
   String searchQuery = '';
+  List<ItemModel> firestoreItems = [];
+  bool isLoadingItems = true;
+  String? itemsError;
+
+  StreamSubscription<List<Map<String, dynamic>>>? _itemsSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToFirestoreItems();
+  }
+
+  void _listenToFirestoreItems() {
+    _itemsSubscription = _firebaseService.getItemsStream().listen(
+      (data) {
+        if (!mounted) return;
+
+        final items = data.map((item) {
+          return ItemModel(
+            id: (item['id'] ?? '').toString(),
+            name: (item['name'] ?? 'Unnamed item').toString(),
+            description: (item['description'] ?? '').toString(),
+            location: (item['location'] ?? '').toString(),
+            date: (item['date'] ?? '').toString(),
+            type: (item['type'] ?? '').toString(),
+          );
+        }).toList();
+
+        setState(() {
+          firestoreItems = items;
+          isLoadingItems = false;
+          itemsError = null;
+        });
+      },
+      onError: (Object error) {
+        if (!mounted) return;
+
+        setState(() {
+          isLoadingItems = false;
+          itemsError = error.toString();
+        });
+      },
+    );
+  }
 
   @override
   void dispose() {
+    _itemsSubscription?.cancel();
     searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Google sign-in successful!'),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sign-in failed: ${e.message ?? e.code}'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sign-in failed: $e')),
+      );
+    }
+  }
+
+  Future<void> signOut() async {
+    try {
+      await _authService.signOut();
+
+      if (!mounted) return;
+
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signed out successfully')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sign-out failed: $e')),
+      );
+    }
   }
 
   List<ItemModel> get searchResults {
@@ -39,10 +141,11 @@ class _HomePageState extends State<HomePage> {
 
     if (query.isEmpty) return [];
 
-    return ItemStore.items.where((item) {
+    return firestoreItems.where((item) {
       return item.name.toLowerCase().contains(query) ||
           item.location.toLowerCase().contains(query) ||
-          item.description.toLowerCase().contains(query);
+          item.description.toLowerCase().contains(query) ||
+          item.type.toLowerCase().contains(query);
     }).toList();
   }
 
@@ -62,8 +165,6 @@ class _HomePageState extends State<HomePage> {
         builder: (_) => const ReportItemPage(),
       ),
     );
-
-    if (mounted) setState(() {});
   }
 
   Future<void> openListPage(Widget page) async {
@@ -71,8 +172,6 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(builder: (_) => page),
     );
-
-    if (mounted) setState(() {});
   }
 
   Widget buildCategoryCard({
@@ -93,7 +192,9 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE6EAF2)),
+              border: Border.all(
+                color: const Color(0xFFE6EAF2),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,6 +367,57 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget buildAccountAction() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: TextButton.icon(
+          onPressed: signInWithGoogle,
+          icon: const Icon(Icons.login_rounded),
+          label: const Text('Sign in'),
+        ),
+      );
+    }
+
+    return PopupMenuButton<String>(
+      tooltip: 'Account',
+      onSelected: (value) {
+        if (value == 'signout') {
+          signOut();
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem<String>(
+          value: 'signout',
+          child: Row(
+            children: [
+              Icon(Icons.logout_rounded),
+              SizedBox(width: 10),
+              Text('Sign out'),
+            ],
+          ),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: CircleAvatar(
+          radius: 17,
+          backgroundColor: lightBlue,
+          backgroundImage:
+              user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+          child: user.photoURL == null
+              ? const Icon(
+                  Icons.account_circle_rounded,
+                  color: primaryBlue,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final results = searchResults;
@@ -320,14 +472,14 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+        actions: [buildAccountAction()],
       ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final contentWidth =
-                constraints.maxWidth > 1000
-                    ? 1000.0
-                    : constraints.maxWidth;
+            final contentWidth = constraints.maxWidth > 1000
+                ? 1000.0
+                : constraints.maxWidth;
 
             return Center(
               child: SizedBox(
@@ -363,8 +515,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -422,7 +573,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
                       const Text(
                         'Find an item',
                         style: TextStyle(
@@ -485,7 +635,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
                       if (!isSearching) ...[
                         const Text(
                           'Explore categories',
@@ -522,14 +671,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 28),
                       ],
-
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              isSearching
-                                  ? 'Search results'
-                                  : 'Recent reports',
+                              isSearching ? 'Search results' : 'Recent reports',
                               style: const TextStyle(
                                 color: textDark,
                                 fontSize: 19,
@@ -537,36 +683,43 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ),
-                          if (!isSearching)
-                            Text(
-                              '${ItemStore.items.length} reports',
-                              style: const TextStyle(
-                                color: textMuted,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          else
-                            Text(
-                              '${results.length} found',
-                              style: const TextStyle(
-                                color: textMuted,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          Text(
+                            isSearching
+                                ? '${results.length} found'
+                                : '${firestoreItems.length} reports',
+                            style: const TextStyle(
+                              color: textMuted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
-
-                      if (isSearching && results.isEmpty)
+                      if (isLoadingItems)
+                        const Padding(
+                          padding: EdgeInsets.all(30),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: primaryBlue,
+                            ),
+                          ),
+                        )
+                      else if (itemsError != null)
+                        buildEmptyState(
+                          icon: Icons.cloud_off_outlined,
+                          title: 'Unable to load reports',
+                          message:
+                              'Check your internet connection and Firestore rules.',
+                        )
+                      else if (isSearching && results.isEmpty)
                         buildEmptyState(
                           icon: Icons.search_off_rounded,
                           title: 'No matching items',
                           message:
                               'Try another name, location or keyword.',
                         )
-                      else if (!isSearching && ItemStore.items.isEmpty)
+                      else if (!isSearching && firestoreItems.isEmpty)
                         buildEmptyState(
                           icon: Icons.inventory_2_outlined,
                           title: 'No reports yet',
@@ -574,10 +727,9 @@ class _HomePageState extends State<HomePage> {
                               'Be the first to report a lost or found item.',
                         )
                       else
-                        ...((isSearching
-                                    ? results
-                                    : ItemStore.items.reversed.toList())
-                                .take(isSearching ? results.length : 8))
+                        ...(isSearching
+                                ? results
+                                : firestoreItems.reversed.take(8).toList())
                             .map(buildItemCard),
                     ],
                   ),
@@ -608,10 +760,7 @@ class _HomePageState extends State<HomePage> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 22,
-        vertical: 30,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 30),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),

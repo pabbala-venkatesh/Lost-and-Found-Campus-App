@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/item_model.dart';
 import '../services/item_store.dart';
+import '../services/firebase_service.dart';
 
 const Color _navyBlue = Color(0xFF12316E);
 const Color _primaryBlue = Color(0xFF2563EB);
@@ -19,11 +20,15 @@ class ReportItemPage extends StatefulWidget {
 
 class _ReportItemPageState extends State<ReportItemPage> {
   final _formKey = GlobalKey<FormState>();
+
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
 
+  final FirebaseService _firebaseService = FirebaseService();
+
   String itemType = 'Lost';
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -33,8 +38,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
     super.dispose();
   }
 
-  void submitReport() {
+  Future<void> submitReport() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
 
     final item = ItemModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -45,17 +53,49 @@ class _ReportItemPageState extends State<ReportItemPage> {
       type: itemType,
     );
 
-    ItemStore.items.add(item);
+    try {
+      await _firebaseService.addItem(
+        name: item.name,
+        description: item.description,
+        location: item.location,
+        date: item.date,
+        type: item.type,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$itemType item reported successfully!'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF16865C),
-      ),
-    );
+      if (!mounted) return;
 
-    Navigator.pop(context);
+      // Preserve compatibility with the existing screens for now.
+      ItemStore.items.add(item);
+
+      setState(() => _isSubmitting = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$itemType item saved successfully!'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF16865C),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() => _isSubmitting = false);
+
+      debugPrint('Firebase report error: $error');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not save the report. Please check your '
+            'internet connection and Firebase permissions.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   InputDecoration fieldDecoration({
@@ -146,10 +186,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            _navyBlue,
-                            _primaryBlue,
-                          ],
+                          colors: [_navyBlue, _primaryBlue],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -336,11 +373,23 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       width: double.infinity,
                       height: 54,
                       child: ElevatedButton.icon(
-                        onPressed: submitReport,
-                        icon: const Icon(Icons.send_rounded),
-                        label: const Text(
-                          'Submit Report',
-                          style: TextStyle(
+                        onPressed:
+                            _isSubmitting ? null : submitReport,
+                        icon: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.send_rounded),
+                        label: Text(
+                          _isSubmitting
+                              ? 'Saving Report...'
+                              : 'Submit Report',
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
@@ -348,6 +397,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _navyBlue,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              _navyBlue.withValues(alpha: 0.6),
+                          disabledForegroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
